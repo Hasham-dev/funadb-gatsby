@@ -1,22 +1,55 @@
-import React from "react"
-import { Link } from "gatsby"
+import React from 'react';
+import { Formik } from 'formik';
 
-import Layout from "../components/layout"
-import Image from "../components/image"
-import SEO from "../components/seo"
+export default function Home() {
+    return <div>
+        <h1>Anywhere in your app!</h1>
+        <Formik
+            initialValues={{ message: '' }}
+            validate={values => {
+                const errors = {};
+                if (!values.message) {
+                    errors.message = 'Required';
+                }
+                return errors;
+            }}
+            onSubmit={(values, { setSubmitting }) => {
+                console.log(values);
+                fetch(`/.netlify/functions/hello`, {
+                    method: 'post',
+                    body: JSON.stringify(values)
+                })
+                    .then(response => response.json())
+                    .then(data => {
+                        console.log(data);
 
-const IndexPage = () => (
-  <Layout>
-    <SEO title="Home" />
-    <h1>Hi people</h1>
-    <p>Welcome to your new Gatsby site.</p>
-    <p>Now go build something great.</p>
-    <div style={{ maxWidth: `300px`, marginBottom: `1.45rem` }}>
-      <Image />
+                    });
+            }}
+        >
+            {({
+                values,
+                errors,
+                touched,
+                handleChange,
+                handleBlur,
+                handleSubmit,
+                isSubmitting,
+                /* and other goodies */
+            }) => (
+                    <form onSubmit={handleSubmit}>
+                        <input
+                            type="text"
+                            name="message"
+                            onChange={handleChange}
+                            onBlur={handleBlur}
+                            value={values.message}
+                        />
+                        {errors.message && touched.message && errors.message}
+                        <button type="submit" disabled={isSubmitting}>
+                            Add Message
+                        </button>
+                    </form>
+                )}
+        </Formik>
     </div>
-    <Link to="/page-2/">Go to page 2</Link> <br />
-    <Link to="/using-typescript/">Go to "Using TypeScript"</Link>
-  </Layout>
-)
-
-export default IndexPage
+}
